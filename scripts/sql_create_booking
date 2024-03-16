@@ -1,0 +1,11 @@
+use pms;
+CREATE TABLE bookings(
+    id INT PRIMARY KEY,
+    bookingCode VARCHAR(50),
+    startDate VARCHAR(50),
+    endDate VARCHAR(50),
+    customers int,
+    bookerName VARCHAR(50),
+    bookerPhone VARCHAR(50),
+    bookerEmail VARCHAR(50)
+);

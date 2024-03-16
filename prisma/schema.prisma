@@ -1,0 +1,81 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+
+
+// Note that during installation, Prisma automatically invokes the prisma generate command for you. 
+// In the future, you need to run this command after every change to your Prisma models to update your generated Prisma Client.
+// for saving dev migration
+// npx prisma migrate dev --name commit_message
+// for dev without saving migration
+// npx prisma db push
+// npx prisma migrate deploy --name commit_message
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Booking {
+  id    Int    @id @default(autoincrement())
+  startDate DateTime
+  endDate DateTime
+  customers Int 
+  bookerName String
+  bookerPhone String
+  bookerEmail String
+  hotel Hotel @relation(fields: [hotelCode],references: [code])
+  hotelCode String
+}
+
+model Hotel{
+  id Int @id @default(autoincrement())
+  code String @unique
+  bookings Booking[]
+  roomTypes RoomType[] 
+  rooms Room[]
+}
+
+model Room{
+  id Int @id @default(autoincrement())
+  roomName String @unique
+  status RoomStatus @default(BOOKED)
+  hotel Hotel @relation(fields: [hotelCode], references: [code])
+  hotelCode String 
+  roomType RoomType @relation(fields: [roomTypeCode], references: [code])
+  roomTypeCode String
+}
+
+model RoomType{
+  id Int @id @default(autoincrement())
+  code String @unique
+  name String @unique
+  rooms Room[]
+  @@unique([code,name])
+  hotel Hotel @relation(fields: [hotelCode], references: [code])
+  hotelCode String
+}
+
+enum RoomStatus { 
+  BOOKED 
+  CHECKIN 
+  CHECKOUT
+}
+
+model Guest{
+  id Int @id @default(autoincrement())
+  name String
+  status GuestStatus @default(BOOKED)
+}
+
+enum GuestStatus { 
+  BOOKED 
+  CHECKIN 
+  CHECKOUT
+}
