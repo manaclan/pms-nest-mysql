@@ -18,6 +18,7 @@ export class HotelsController {
         metadata: hotel,
       };
     } catch (e) {
+      console.log(e);
       return e;
     }
   }

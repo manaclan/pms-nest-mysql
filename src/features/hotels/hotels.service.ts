@@ -22,22 +22,27 @@ export class HotelsService {
         HttpStatus.BAD_REQUEST,
       );
     }
-    console.log(rooms);
     const hotel = await this.prisma.hotel.upsert({
       where: { code: hotelCode },
       update: {},
       create: {
         code: hotelCode,
         rooms: {
-          createMany: {
-            data: rooms,
-          },
+          create: rooms.map((r) => ({
+            roomName: r.roomName,
+            status: r.status,
+            roomType: { connect: { code: r.roomTypeCode } },
+          })),
         },
         roomTypes: {
           createMany: {
             data: roomTypes,
           },
         },
+      },
+      include: {
+        rooms: true,
+        roomTypes: true,
       },
     });
     return hotel;
