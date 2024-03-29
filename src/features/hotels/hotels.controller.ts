@@ -1,9 +1,18 @@
-import { Body, Controller, Post, ValidationPipe } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  HttpStatus,
+  Param,
+  Post,
+  Query,
+  ValidationPipe,
+} from '@nestjs/common';
 import { CreateHotelDTO } from './dtos/createHotel.dto';
 import { HotelsService } from './hotels.service';
 import { CreateRoomTypeDTO } from './dtos/createRoomType.dto';
 
-@Controller('hotels')
+@Controller('')
 export class HotelsController {
   constructor(private service: HotelsService) {}
   @Post('create_hotel')
@@ -13,28 +22,36 @@ export class HotelsController {
     try {
       const hotel = await this.service.createHotel(request);
       return {
-        statuscode: 'OK',
-        message: '',
+        statuscode: HttpStatus.OK,
+        message: 'OK',
         metadata: hotel,
       };
     } catch (e) {
       console.log(e);
-      return e;
+      return {
+        statuscode: e.statuscode,
+        message: e.message,
+        metadata: {},
+      };
     }
   }
 
-  //   @Post('create_room_type')
-  //   async createRoomType(
-  //     @Body(new ValidationPipe()) request: CreateRoomTypeDTO,
-  //   ): Promise<any> {
-  //     try{
-  //       const hotel = await this.service.createRoomType(request);
-  //     }
-
-  //     return {
-  //       statuscode: 'OK',
-  //       message: '',
-  //       metadata: hotel,
-  //     };
-  //   }
+  @Delete('delete_hotel')
+  async deleteHotel(@Query('hotelCode') hotelCode: string): Promise<any> {
+    try {
+      const res = this.service.deleteHotel(hotelCode);
+      return {
+        statuscode: HttpStatus.OK,
+        message: 'OK',
+        metadata: res,
+      };
+    } catch (e) {
+      console.log(e);
+      return {
+        statuscode: e.statuscode,
+        message: e.message,
+        metadata: {},
+      };
+    }
+  }
 }

@@ -2,6 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/orm/prisma.service';
 import { CreateHotelDTO } from './dtos/createHotel.dto';
 import { CreateRoomTypeDTO } from './dtos/createRoomType.dto';
+import { PrismaClient } from '@prisma/client';
 
 @Injectable()
 export class HotelsService {
@@ -22,6 +23,9 @@ export class HotelsService {
         HttpStatus.BAD_REQUEST,
       );
     }
+
+    //Beside conect, we an use connectOrCreate
+    //https://www.prisma.io/docs/orm/prisma-client/queries/relation-queries#connect-or-create-a-record
     const hotel = await this.prisma.hotel.upsert({
       where: { code: hotelCode },
       update: {},
@@ -46,5 +50,28 @@ export class HotelsService {
       },
     });
     return hotel;
+  }
+
+  async deleteHotel(hotelCode: string): Promise<any> {
+    try {
+      const deleteRooms = this.prisma.room.deleteMany({
+        where: { hotelCode: hotelCode },
+      });
+      const deleteRoomType = this.prisma.roomType.deleteMany({
+        where: { hotelCode: hotelCode },
+      });
+      const deleteHotel = this.prisma.hotel.delete({
+        where: { code: hotelCode },
+      });
+
+      const transaction = await this.prisma.$transaction([
+        deleteRooms,
+        deleteRoomType,
+        deleteHotel,
+      ]);
+      return transaction;
+    } catch (e) {
+      throw e;
+    }
   }
 }

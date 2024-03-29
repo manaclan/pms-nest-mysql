@@ -1,19 +1,25 @@
+import { Transform } from 'class-transformer';
 import {
+  IsDateString,
   IsEmail,
   IsNotEmpty,
   IsNumber,
   IsPhoneNumber,
   IsPositive,
   IsString,
-  Min,
   ValidateIf,
 } from 'class-validator';
+import { ToPhone } from 'src/utils/validatePhone';
 
 export class CreateBookingDTO {
   @IsNotEmpty()
+  // @IsDateString()
+  @Transform(({ value }) => value && new Date(value))
   startDate: Date;
 
   @IsNotEmpty()
+  // @IsDateString()
+  @Transform(({ value }) => value && new Date(value))
   endDate: Date;
 
   @IsNotEmpty()
@@ -28,11 +34,17 @@ export class CreateBookingDTO {
   @IsString()
   bookerName: string;
 
+  @IsString()
+  firstName: string;
+
+  @IsString()
+  lastName: string;
+
   @IsEmail()
   @ValidateIf((o) => !o.bookerPhone)
   bookerEmail: string;
 
-  @IsPhoneNumber()
+  @ToPhone
   @ValidateIf((o) => !o.bookerEmail)
   bookerPhone: string;
 
