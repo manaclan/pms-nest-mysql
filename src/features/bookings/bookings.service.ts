@@ -11,44 +11,54 @@ export const createBooking = async (
   dto: CreateBookingDTO,
   prisma: PrismaService,
 ): Promise<any> => {
-  const booking = await prisma.booking.create({
-    data: {
-      startDate: new Date(dto.startDate),
-      endDate: new Date(dto.endDate),
-      customers: dto.customers,
-      bookerEmail: dto.bookerEmail,
-      bookerName: dto.bookerName,
-      bookerPhone: dto.bookerPhone,
-      firstName: dto.firstName,
-      lastName: dto.lastName,
-      hotel: { connect: { code: hotelCode } },
-      rooms: {
-        createMany: {
-          data: dto.roomTypes.reduce((acc, curr) => {
-            for (let i = 0; i < curr.numbers; i++) {
-              acc = acc.concat([
-                {
-                  startTime: new Date(dto.startDate),
-                  endTime: new Date(dto.endDate),
-                  roomTypeCode: curr.id,
-                },
-              ]);
-            }
-            return acc;
-          }, []),
+  return prisma.$transaction(async (tx) => {
+    const booking = await tx.booking.findFirst({
+      where: { hotelCode: hotelCode },
+      orderBy: { id: 'desc' },
+    });
+    return await prisma.booking.create({
+      data: {
+        startDate: new Date(dto.startDate),
+        endDate: new Date(dto.endDate),
+        customers: dto.customers,
+        bookerEmail: dto.bookerEmail,
+        bookerName: dto.bookerName,
+        bookerPhone: dto.bookerPhone,
+        firstName: dto.firstName,
+        lastName: dto.lastName,
+        hotel: { connect: { code: hotelCode } },
+        rooms: {
+          createMany: {
+            data: dto.roomTypes.reduce((acc, curr) => {
+              for (let i = 0; i < curr.numbers; i++) {
+                acc = acc.concat([
+                  {
+                    startTime: new Date(dto.startDate),
+                    endTime: new Date(dto.endDate),
+                    roomTypeCode: curr.id,
+                  },
+                ]);
+              }
+              return acc;
+            }, []),
+          },
+        },
+        hotelSpecificId: booking ? booking.hotelSpecificId + 1 : 1,
+        bookingCode: booking
+          ? hotelCode + booking.hotelSpecificId.toString()
+          : hotelCode + '1',
+      },
+
+      include: {
+        rooms: {
+          include: {
+            roomType: true,
+            guests: true,
+          },
         },
       },
-    },
-    include: {
-      rooms: {
-        include: {
-          roomType: true,
-          guests: true,
-        },
-      },
-    },
+    });
   });
-  return booking;
 };
 
 export const getBooking = async (
@@ -57,7 +67,7 @@ export const getBooking = async (
   prisma: PrismaService,
 ) => {
   const booking = await prisma.booking.findUnique({
-    where: { id: parseInt(bookingCode.slice(hotelCode.length)) },
+    where: { bookingCode: bookingCode },
     include: {
       rooms: {
         include: {

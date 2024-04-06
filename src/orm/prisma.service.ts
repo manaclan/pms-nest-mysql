@@ -5,5 +5,17 @@ import { PrismaClient } from '@prisma/client';
 export class PrismaService extends PrismaClient implements OnModuleInit {
   async onModuleInit() {
     await this.$connect();
+    // this.$extends({
+    //   result: {
+    //     booking: {
+    //       bookingCode: {
+    //         needs: { id: true, hotelCode: true },
+    //         compute(booking) {
+    //           return booking.hotelCode + booking.id.toString();
+    //         },
+    //       },
+    //     },
+    //   },
+    // });
   }
 }

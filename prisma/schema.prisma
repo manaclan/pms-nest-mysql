@@ -22,17 +22,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Booking {
-  id    Int    @id @default(autoincrement())
-  startDate DateTime
-  endDate DateTime
-  customers Int 
-  bookerName String
-  bookerPhone String
-  bookerEmail String
-  hotel Hotel @relation(fields: [hotelCode],references: [code])
-  hotelCode String
-}
 
 model Hotel{
   id Int @id @default(autoincrement())
@@ -40,6 +29,7 @@ model Hotel{
   bookings Booking[]
   roomTypes RoomType[] 
   rooms Room[]
+  @@map("hotels")
 }
 
 model Room{
@@ -50,6 +40,10 @@ model Room{
   hotelCode String 
   roomType RoomType @relation(fields: [roomTypeCode], references: [code])
   roomTypeCode String
+  roomsInBooking RoomInBooking[] @relation("roomInBooking") 
+  //can omit the @relation and the roomInBooking in the corresponding relationship
+  // I left here for demonstration feature of prisma
+  @@map("rooms")
 }
 
 model RoomType{
@@ -60,6 +54,9 @@ model RoomType{
   @@unique([code,name])
   hotel Hotel @relation(fields: [hotelCode], references: [code])
   hotelCode String
+  roomsInBooking RoomInBooking[]
+  capacity Int
+  @@map("room_types")
 }
 
 enum RoomStatus { 
@@ -68,10 +65,59 @@ enum RoomStatus {
   CHECKOUT
 }
 
+model Booking {
+  id    Int    @id @default(autoincrement())
+  startDate DateTime
+  endDate DateTime
+  customers Int 
+  bookerName String
+  bookerPhone String
+  bookerEmail String
+  firstName String
+  lastName String
+  hotel Hotel @relation(fields: [hotelCode],references: [code])
+  hotelCode String
+  hotelSpecificId Int
+  bookingCode String @unique
+  rooms RoomInBooking[]
+  createdOn      DateTime  @default(now())
+  updatedOn      DateTime  @default(now())
+  @@map("bookings")
+}
+
+model RoomInBooking{
+  id    Int    @id @default(autoincrement()) @map("roomcode")
+  startTime DateTime
+  endTime DateTime
+  room Room? @relation("roomInBooking",fields: [roomId],references: [id])
+  roomId Int? @map("roomId")
+  totalCustomersRemain Int?
+  roomType RoomType @relation(fields: [roomTypeCode], references: [code])
+  roomTypeCode String
+  status RoomStatus @default(BOOKED)
+  guests Guest[]
+  booking Booking @relation(fields: [bookingCode],references: [bookingCode])
+  bookingCode String
+  @@unique([id,startTime,endTime], name:"guestInOutDate")
+  @@map("rooms_bookings")
+}
+
+
 model Guest{
-  id Int @id @default(autoincrement())
+  id Int @id @default(autoincrement()) 
   name String
   status GuestStatus @default(BOOKED)
+  room RoomInBooking @relation(fields: [roomInBookingId, startDate, endDate], references: [id,startTime, endTime])
+  roomInBookingId Int
+  startDate DateTime 
+  endDate DateTime
+  phone String
+  email String
+  address String
+  firstName String
+  lastName String
+  @@unique([roomInBookingId,startDate,endDate])
+  @@map("guests")
 }
 
 enum GuestStatus { 
