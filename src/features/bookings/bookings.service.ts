@@ -16,7 +16,8 @@ export const createBooking = async (
       where: { hotelCode: hotelCode },
       orderBy: { id: 'desc' },
     });
-    return await prisma.booking.create({
+    console.log(booking);
+    return await tx.booking.create({
       data: {
         startDate: new Date(dto.startDate),
         endDate: new Date(dto.endDate),
@@ -45,7 +46,7 @@ export const createBooking = async (
         },
         hotelSpecificId: booking ? booking.hotelSpecificId + 1 : 1,
         bookingCode: booking
-          ? hotelCode + booking.hotelSpecificId.toString()
+          ? hotelCode + (booking.hotelSpecificId + 1).toString()
           : hotelCode + '1',
       },
 

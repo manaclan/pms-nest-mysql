@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   HttpStatus,
   Param,
   Post,
@@ -33,6 +34,20 @@ export class HotelsController {
         message: e.message,
         metadata: {},
       };
+    }
+  }
+
+  @Get('get_hotel_list')
+  async getHotelList(): Promise<any> {
+    try {
+      const hotelList = await this.service.getHotelList();
+      return {
+        statuscode: HttpStatus.OK,
+        message: 'OK',
+        metadata: hotelList,
+      };
+    } catch (e) {
+      return { statuscode: e.statuscode, message: e.message, metadata: {} };
     }
   }
 

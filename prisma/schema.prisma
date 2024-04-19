@@ -29,6 +29,8 @@ model Hotel{
   bookings Booking[]
   roomTypes RoomType[] 
   rooms Room[]
+  createAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
   @@map("hotels")
 }
 
@@ -41,6 +43,8 @@ model Room{
   roomType RoomType @relation(fields: [roomTypeCode], references: [code])
   roomTypeCode String
   roomsInBooking RoomInBooking[] @relation("roomInBooking") 
+  createAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
   //can omit the @relation and the roomInBooking in the corresponding relationship
   // I left here for demonstration feature of prisma
   @@map("rooms")
@@ -56,6 +60,8 @@ model RoomType{
   hotelCode String
   roomsInBooking RoomInBooking[]
   capacity Int
+  createAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
   @@map("room_types")
 }
 
@@ -80,8 +86,8 @@ model Booking {
   hotelSpecificId Int
   bookingCode String @unique
   rooms RoomInBooking[]
-  createdOn      DateTime  @default(now())
-  updatedOn      DateTime  @default(now())
+  createAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
   @@map("bookings")
 }
 
@@ -98,7 +104,9 @@ model RoomInBooking{
   guests Guest[]
   booking Booking @relation(fields: [bookingCode],references: [bookingCode])
   bookingCode String
-  @@unique([id,startTime,endTime], name:"guestInOutDate")
+  createAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  @@unique([roomId,startTime,endTime], name:"guestInOutDate")
   @@map("rooms_bookings")
 }
 
@@ -107,16 +115,19 @@ model Guest{
   id Int @id @default(autoincrement()) 
   name String
   status GuestStatus @default(BOOKED)
-  room RoomInBooking @relation(fields: [roomInBookingId, startDate, endDate], references: [id,startTime, endTime])
-  roomInBookingId Int
+  room RoomInBooking @relation(fields: [roomId, startDate, endDate], references: [roomId,startTime, endTime])
+  roomId Int
   startDate DateTime 
   endDate DateTime
   phone String
-  email String
+  email String 
   address String
   firstName String
   lastName String
-  @@unique([roomInBookingId,startDate,endDate])
+  createAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  @@index([email,phone])
+  @@unique([email,phone], name: "emailPhone")
   @@map("guests")
 }
 

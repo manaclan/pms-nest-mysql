@@ -52,26 +52,26 @@ export class HotelsService {
     return hotel;
   }
 
-  async deleteHotel(hotelCode: string): Promise<any> {
-    try {
-      const deleteRooms = this.prisma.room.deleteMany({
-        where: { hotelCode: hotelCode },
-      });
-      const deleteRoomType = this.prisma.roomType.deleteMany({
-        where: { hotelCode: hotelCode },
-      });
-      const deleteHotel = this.prisma.hotel.delete({
-        where: { code: hotelCode },
-      });
+  async getHotelList(): Promise<any> {
+    return await this.prisma.hotel.findMany({ select: { code: true } });
+  }
 
-      const transaction = await this.prisma.$transaction([
-        deleteRooms,
-        deleteRoomType,
-        deleteHotel,
-      ]);
-      return transaction;
-    } catch (e) {
-      throw e;
-    }
+  async deleteHotel(hotelCode: string): Promise<any> {
+    const deleteRooms = this.prisma.room.deleteMany({
+      where: { hotelCode: hotelCode },
+    });
+    const deleteRoomType = this.prisma.roomType.deleteMany({
+      where: { hotelCode: hotelCode },
+    });
+    const deleteHotel = this.prisma.hotel.delete({
+      where: { code: hotelCode },
+    });
+
+    const transaction = await this.prisma.$transaction([
+      deleteRooms,
+      deleteRoomType,
+      deleteHotel,
+    ]);
+    return transaction;
   }
 }
