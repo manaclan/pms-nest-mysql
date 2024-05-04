@@ -1,12 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { CreateBookingDTO } from './dtos/createBooking.dto';
 import { PrismaService } from 'src/orm/prisma.service';
-import { Booking, PrismaClient } from '@prisma/client';
-import { AssignGuestsDTO } from '../hotels/dtos/assignGuests.dto';
 import { CreateBookingResult } from './utils/createBookingResult';
 import { GetBookingResult } from './utils/getBookingResult';
+import { GetBookingsDTO } from './dtos/getBookings.dto';
 
-export const createBooking = async (
+const createBooking = async (
   hotelCode: string,
   dto: CreateBookingDTO,
   prisma: PrismaService,
@@ -62,7 +61,7 @@ export const createBooking = async (
   });
 };
 
-export const getBooking = async (
+const getBooking = async (
   bookingCode: string,
   hotelCode: string,
   prisma: PrismaService,
@@ -103,5 +102,9 @@ export class BookingsService {
     } catch (e) {
       throw e;
     }
+  }
+
+  async getBookings(queryOption: GetBookingsDTO): Promise<any> {
+    return await this.prisma.booking.findMany({});
   }
 }
